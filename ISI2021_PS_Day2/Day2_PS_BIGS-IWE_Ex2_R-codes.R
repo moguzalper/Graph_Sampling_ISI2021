@@ -1,8 +1,8 @@
-# Chapter 2.4 - examples
-library(igraph)
+## Load R-package igraph
+library(igraph) # If not installed previously, use install.packages("igraph")
 ##
 
-
+# Chapter 2.4 examples
 # To make total number of in and out-degrees equal
 degcorrection <- function(controldeg,targetdeg){
   check=as.numeric(sum(targetdeg)!=sum(controldeg))
@@ -164,11 +164,51 @@ mainsimBIGSIWE <- function(popgraph,coefgamma=0,n=2,B=50){
   
   cat("gamma =",coefgamma,"\n")
   cat('(N,n,Omega, mean(|Omega_s|)) =',N,n,length(idx_omega),mean(size_omegas),'\n')
-  cat('max.|betak| =',max(card_betak),'\n')
   
-  resultIWE <- t(array(c(var(YhatHH_beta),var(YhatHH_alpha),apply(Yhatp,2,var))/var(YhatHT),c(5,1)))
-  colnames(resultIWE) <- c('Zhatmult','ZhatPIDA','Zhatp_rnd','Zhatp_asc','Zhatp_desc')
-  rownames(resultIWE) <- c('RE against HTE')
+  resultIWE <- t(array(c(sqrt(c(var(YhatHH_beta),var(YhatHH_alpha),apply(Yhatp,2,var))),c(var(YhatHH_beta),var(YhatHH_alpha),apply(Yhatp,2,var))/var(YhatHT)),c(5,2)))
+  colnames(resultIWE) <- c('Zhatmult','ZhatPIDA','Yhatp_rnd','Yhatp_asc','Yhatp_desc')
+  rownames(resultIWE) <- c('MC-SD','RE against HTE')
   print(resultIWE)
 }
 
+# Generate population graphs
+poprndg <- skthrndBIG(showplot=TRUE)
+
+
+popg_uni <- poprndg$Guniform
+popg_skew <- poprndg$Gskewed
+
+# mainsimBIGSIWE(popgraph,coefgamma=0,n=2,B=50)
+mainsimBIGSIWE(popg_uni,coefgamma=0.5)
+mainsimBIGSIWE(popg_skew,coefgamma=0.5)
+
+
+# Variance of zi_alpha for diferent choices of gamma
+max.gamma <- 5
+range.gamma <- seq(0,max.gamma,by=0.1)
+varzi_alpha_uni <- NULL
+varzi_alpha_skew <- NULL
+for(tmp.gamma in range.gamma){tmp_uni <- var(zFun(popg_uni,tmp.gamma))
+tmp_skew <- var(zFun(popg_skew,tmp.gamma))
+varzi_alpha_uni <- c(varzi_alpha_uni,tmp_uni) 
+varzi_alpha_skew <- c(varzi_alpha_skew,tmp_skew) }
+# Gamma value which gives minimum variance
+gamma.minvar_uni <- range.gamma[which(varzi_alpha_uni==min(varzi_alpha_uni))]
+gamma.minvar_skew <- range.gamma[which(varzi_alpha_skew==min(varzi_alpha_skew))]
+cat('gamma.minvar_uni =', gamma.minvar_uni,'\n')
+cat('gamma.minvar_skew =', gamma.minvar_skew,'\n')
+
+
+
+mainsimBIGSIWE(popg_uni,coefgamma=gamma.minvar_uni)
+mainsimBIGSIWE(popg_skew,coefgamma=gamma.minvar_skew)
+
+mainsimBIGSIWE(popg_uni,n=5,coefgamma=gamma.minvar_uni)
+mainsimBIGSIWE(popg_skew,n=5,coefgamma=gamma.minvar_skew)
+
+
+mainsimBIGSIWE(popg_uni,n=10,coefgamma=gamma.minvar_uni)
+mainsimBIGSIWE(popg_skew,n=10,coefgamma=gamma.minvar_skew)
+
+mainsimBIGSIWE(popg_uni,n=20,coefgamma=gamma.minvar_uni)
+mainsimBIGSIWE(popg_skew,n=20,coefgamma=gamma.minvar_skew)

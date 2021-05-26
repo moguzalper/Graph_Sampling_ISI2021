@@ -1,5 +1,6 @@
+## Load R-package igraph
+library(igraph) # If not installed previously, use install.packages("igraph")
 ##
-library(igraph)
 
 # Skecth of the wolverine tracks, Becker (1991)
 skthLISBecker <- function()
@@ -119,4 +120,48 @@ if(showcat){
 }
   return(list(varest=var(YhatHH_alpha)/B))
 }  
+
+
+skthLISBecker()
+skthLISBeckerBIG(showplot=TRUE)
+
+# Generate the graph based on observed units
+gstar <- skthLISBeckerBIG()$G
+
+
+xi <- c(5.25,7.5-5.25,1,2.4,1,7.05,1)
+pi <- xi/12
+coefg <- 0
+cat('g:',coefg,'\t','zi_alpha:',zLISBecker(gstar,coefg,pi),"\n",'\t','zi_beta:',zLISBecker(gstar,pi, multiplicity = TRUE),"\n")
+
+
+mainLISBecker(gstar,probi=pi,multiplicity=TRUE)
+
+mainLISBecker(gstar,probi=pi)
+
+mainLISBecker(gstar,0.5,probi=pi)
+
+mainLISBecker(gstar,1,probi=pi)
+
+# Variance estimates of zi_alpha for different choices of gamma
+max.gamma <- 15
+range.gamma <- seq(0,max.gamma,by=0.1)
+varest_gamma <- NULL
+for(tmp.gamma in range.gamma){tmp <- mainLISBecker(gstar, coefgamma=tmp.gamma,probi=pi,showcat = FALSE)$varest
+varest_gamma <- c(varest_gamma,tmp)                       }
+# Gamma value which gives minimum variance
+par(mfrow=c(1,1),xpd=FALSE)
+plot(range.gamma,varest_gamma,xlab='gamma',ylab='varest')
+varest_multiplicity <- mainLISBecker(gstar,coefgamma=tmp.gamma,probi=pi,multiplicity = TRUE, showcat = FALSE)$varest
+abline(h=varest_multiplicity)
+text(max.gamma*0.90,varest_multiplicity *0.98,label='varest(zi_beta)',pos=1)
+gamma.multiplicity <- range.gamma[which(abs(varest_gamma-varest_multiplicity)==min(abs(varest_gamma-varest_multiplicity)))]
+abline(v=gamma.multiplicity,lty=2)
+text(gamma.multiplicity*1.1,max(varest_gamma)*0.99,label=paste('gamma.multiplicity=',gamma.multiplicity),adj=0)
+
+
+mainLISBecker(gstar,gamma.multiplicity,probi=pi)
+mainLISBecker(gstar,probi=pi,multiplicity=TRUE)
+
+
 

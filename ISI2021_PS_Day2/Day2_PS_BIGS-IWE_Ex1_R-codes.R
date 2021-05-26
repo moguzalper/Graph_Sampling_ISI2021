@@ -1,6 +1,7 @@
-# Chapter 2.4 - examples
-library(igraph)
+## Load R-package igraph
+library(igraph) # If not installed previously, use install.packages("igraph")
 ##
+
 
 # Examples similar to those in Chapter 2.4
 ##
@@ -77,7 +78,6 @@ zFun <- function(popgraph,coefgamma=0,n=2,multiplicity=FALSE){
 }
 
 
-
 # HTE, HH-type estimators and priority-rule estimators
 mainBIGSIWE <- function(popgraph,coefgamma=0,n=2){
   edgeik <- data.frame(as_edgelist(popgraph))
@@ -140,8 +140,52 @@ mainBIGSIWE <- function(popgraph,coefgamma=0,n=2){
   cat("idxF: ",idx_F, '\t',"alphai: ", card_alphai,"\n")
   
   resultIWE <- t(array(c(mean(YhatHT),mean(YhatHH_alpha),mean(Yhatp[,1]),mean(Yhatp[,2]),mean(Yhatp[,3]),c(var(YhatHT),var(YhatHH_alpha),var(Yhatp[,1]),var(Yhatp[,2]),var(Yhatp[,3]))*(B-1)/B),c(5,2)))
-  colnames(resultIWE) <- c('YhatHTE','ZhatHH','Zhatp_rnd','Zhatp_asc','Zhatp_desc')
+  colnames(resultIWE) <- c('YhatHTE','ZhatHH','Yhatp_rnd','Yhatp_asc','Yhatp_desc')
   rownames(resultIWE) <- c('ExpectedValue','Variance')
   print(resultIWE)
 }
+
+
+# Generate a population graph
+set.seed(270521)
+popg <- skthBIG(showplot=TRUE)$G
+V(popg)
+E(popg)
+as_edgelist(popg)
+cat('|Beta_kappa| =',table(as_edgelist(popg)[,2]),'\n')
+cat('|alpha_i| =', table(as_edgelist(popg)[,1]),'\n')
+
+# zFun(popgraph,coefgamma=0,n=2,multiplicity=FALSE)
+coefg <- 1
+cat('g:',coefg,'\t','zi_alpha:',zFun(popg,coefg),'; var(zi_alpha):',var(zFun(popg,coefg)),"\n",'\t','zi_beta:',zFun(popg,multiplicity = TRUE),'; var(zi_beta):',var(zFun(popg,multiplicity = TRUE)),"\n")
+
+
+# Variance of zi_alpha for different choices of gamma
+max.gamma <- 25
+range.gamma <- seq(0,max.gamma,by=0.1)
+varzi_alpha <- NULL
+for(tmp.gamma in range.gamma){tmp <- var(zFun(popg,tmp.gamma))
+varzi_alpha <- c(varzi_alpha,tmp)}
+# Gamma value which gives minimum variance
+gamma.minvar <- range.gamma[which(varzi_alpha==min(varzi_alpha))]
+print(gamma.minvar)
+par(mfrow=c(1,1),xpd=TRUE)
+plot(range.gamma,varzi_alpha,xlab='gamma',ylab='V(zi_alpha)')
+abline(h=var(zFun(popg,0,multiplicity=TRUE)))
+text(max.gamma*0.95,var(zFun(popg,0,multiplicity=TRUE))*0.98,label='V(zi_beta)',pos=1)
+abline(v=gamma.minvar,lty=2)
+text(gamma.minvar,max(varzi_alpha)*1.05,label=paste('gamma.minvar=',gamma.minvar),adj=1)
+
+
+# Minimum variance
+var(zFun(popg,gamma.minvar))
+# Variance with multiplicity weights
+var(zFun(popg,0))
+
+mainBIGSIWE(popg)
+
+mainBIGSIWE(popg,coefgamma=gamma.minvar)
+
+mainBIGSIWE(popg,coefgamma=0.5)
+
 
