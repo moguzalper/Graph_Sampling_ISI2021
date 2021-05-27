@@ -1,6 +1,7 @@
-# 
-library(igraph)
-
+#
+## Load R-packages igraph
+library(igraph) # If not installed previously, use install.packages("igraph")
+##
 
 # Generate graph
 genG <- function(N=100,tot=20,xi=c(0.7,0.2,0.1))
@@ -31,7 +32,7 @@ genG <- function(N=100,tot=20,xi=c(0.7,0.2,0.1))
 
 
 # Count triangles
-triangle <- function(amat=Amat)
+triangle <- function(amat)
 {
   N = nrow(amat); d = rowSums(amat); ridx = c(1:N)[d>1]
   theta = 0
@@ -43,12 +44,11 @@ triangle <- function(amat=Amat)
   theta/6
 }
 
-triangle(Amat)
 
 
 
 # K-step TRW
-trw <- function(amat=Amat,init=0,K=100,r=0.1)
+trw <- function(amat,init=0,K=100,r=0.1)
 {
   N = nrow(amat); d = rowSums(amat)
   if (init==0) { 
@@ -70,21 +70,19 @@ trw <- function(amat=Amat,init=0,K=100,r=0.1)
 } 
  
 
-
 # Convergence in terms of E(X_t)
-cnv.y <- function(amat=Amat,init=0,K=2,r=1,B=100)
+cnv.y <- function(amat,y,init=0,K=2,r=1,B=100)
 {
   p = rowSums(amat)+r; p = p/sum(p)
   cat("stationary E(X_t):",sum(y*p),"\n")
   x = rep(0,B)
   for (i in 1:B) { x[i] = trw(amat,init,K,r)$X[1+K] }
   cat("(mean, MC_SD) =", c(mean(y[x]),sqrt(var(y[x])/B)), "\n")
-  return(mean(y[x]))
 } 
 
 
 # Generalised ratio estimator for 1st order parameter
-est.y <- function(amat,init=0,K=100,r=0.1,B=100)
+est.y <- function(amat,y,init=0,K=100,r=0.1,B=100)
 {
   N = nrow(amat); d = rowSums(amat)
   p = d+r
@@ -101,14 +99,13 @@ est.y <- function(amat,init=0,K=100,r=0.1,B=100)
 } 
  
 
-# Subsidiary function
+# Subsidiary function called by the function "muFun"
 checkSum <- function(x,vrb)
 {
   sum(x %in% vrb)
 }
-
 # The ratio of case-triangles to the triangles with at least one non-case nodes in the population graph
-muFun <- function(amat){
+muFun <- function(amat,y){
   popg <- graph_from_adjacency_matrix(amat,mode='undirected')
   tri.g <- cliques(popg,min=3,max=3)
   tmp <- as.data.frame(unlist(t(apply(sapply(tri.g, as_ids),2,sort))))
@@ -120,10 +117,8 @@ muFun <- function(amat){
 
 
 
-
-
 # Ratio estimator: case triangles vs case-noncase triangles
-est.tri <- function(amat=Amat,init=0,K=100,r=0.1,B=100)
+est.tri <- function(amat,y,init=0,K=100,r=0.1,B=100)
 {
   N = nrow(amat); d = rowSums(amat)
   p = d+r
@@ -145,7 +140,7 @@ est.tri <- function(amat=Amat,init=0,K=100,r=0.1,B=100)
             p.k = p[a]*(Pmat[a,b]+Pmat[a,h])+p[b]*(Pmat[b,a]+Pmat[b,h])+p[h]*(Pmat[h,a]+Pmat[h,b]) # Applying eqs. (6.9) and (6.14)
             z1[k] = z1[k] + y[a]*y[b]*y[h]*p.s[k]/p.k # Count triangles if all nodes are cases
             z0[k] = z0[k] + (1-y[a]*y[b]*y[h])*p.s[k]/p.k # Count triangles if any one of nodes is non-case
-    }}}}
+          }}}}
     mu[i] = sum(z1[idt==1]/p.s[idt==1])/sum(z0[idt==1]/p.s[idt==1]) # Ratio of case triangles to triangles with at least one non-case node
     ids[i] = (sum(idt)==0) | (sum(z0[idt==1])==0) # Identify replicates with invalid walks
   }
@@ -154,4 +149,3 @@ est.tri <- function(amat=Amat,init=0,K=100,r=0.1,B=100)
   cat("valid walks:",length(mu),"\n")
   cat("(mean, SD) =",c(mean(mu),sqrt(var(mu))),"\nMC_SD(mean):",sqrt(var(mu)/B), "\n")
 }
-
