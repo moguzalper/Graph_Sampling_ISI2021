@@ -70,11 +70,11 @@ trw <- function(amat,init=0,K=100,r=0.1)
 } 
  
 
-# Convergence in terms of E(X_t)
+# Convergence in terms of E(Y_t)
 cnv.y <- function(amat,y,init=0,K=2,r=1,B=100)
 {
   p = rowSums(amat)+r; p = p/sum(p)
-  cat("stationary E(X_t):",sum(y*p),"\n")
+  cat("stationary E(Y_t):",sum(y*p),"\n")
   x = rep(0,B)
   for (i in 1:B) { x[i] = trw(amat,init,K,r)$X[1+K] }
   cat("(mean, MC_SD) =", c(mean(y[x]),sqrt(var(y[x])/B)), "\n")
@@ -149,3 +149,126 @@ est.tri <- function(amat,y,init=0,K=100,r=0.1,B=100)
   cat("valid walks:",length(mu),"\n")
   cat("(mean, SD) =",c(mean(mu),sqrt(var(mu))),"\nMC_SD(mean):",sqrt(var(mu)/B), "\n")
 }
+
+
+theta <- 20
+popsize <- 100
+y = c(rep(1,theta),rep(0,popsize-theta))
+Amat <- genG(N=popsize,tot=theta,xi=c(0.9,0.1,0.05))
+cat('Average degree of cases =',mean(colSums(Amat[1:popsize,1:theta])),'\n')
+cat('Average degree of non-cases =',mean(colSums(Amat[1:popsize,(theta+1):popsize])),'\n')
+
+
+# Convergence to equilibrium
+# X0=1
+cnv.y(amat=Amat,y,init=1,K=1,r=1,B=10000)
+cnv.y(amat=Amat,y,init=1,K=1,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# X0=1
+cnv.y(amat=Amat,y,init=1,K=4,r=1,B=10000)
+cnv.y(amat=Amat,y,init=1,K=4,r=0.1,B=10000)
+
+# Convergence to equilibrium
+# X0=1
+cnv.y(amat=Amat,y,init=1,K=8,r=1,B=10000)
+cnv.y(amat=Amat,y,init=1,K=8,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# X0=1
+cnv.y(amat=Amat,y,init=1,K=16,r=1,B=10000)
+cnv.y(amat=Amat,y,init=1,K=16,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# Pr(X0=i)=1/N
+cnv.y(amat=Amat,y,init=-1,K=1,r=1,B=10000)
+cnv.y(amat=Amat,y,init=-1,K=1,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# Pr(X0=i)=1/N
+cnv.y(amat=Amat,y,init=-1,K=4,r=1,B=10000)
+cnv.y(amat=Amat,y,init=-1,K=4,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# Pr(X0=i)=1/N
+cnv.y(amat=Amat,y,init=-1,K=8,r=1,B=10000)
+cnv.y(amat=Amat,y,init=-1,K=8,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# Pr(X0=i)=pi_i
+cnv.y(amat=Amat,y,init=0,K=1,r=1,B=10000)
+cnv.y(amat=Amat,y,init=0,K=1,r=0.1,B=10000)
+
+
+# Convergence to equilibrium
+# Pr(X0=i)=pi_i
+cnv.y(amat=Amat,y,init=0,K=4,r=1,B=10000)
+cnv.y(amat=Amat,y,init=0,K=4,r=0.1,B=10000)
+
+
+# est.y(amat,y,init=-1,K=100,r=0.1,B=1000)
+# Initial state selected with probabilities 1/N
+est.y(amat=Amat,y,init=-1,K=50,r=0.1,B=1000)
+
+
+# Initial state selected with probabilities 1/N
+est.y(amat=Amat,y,init=-1,K=100,r=0.1,B=1000)
+
+
+# Initial state selected with probabilities 1/N
+est.y(amat=Amat,y,init=-1,K=50,r=1,B=1000)
+
+
+# Initial state selected with probabilities 1/N
+est.y(amat=Amat,y,init=-1,K=100,r=1,B=1000)
+
+
+# Number of triangles in the population graph
+triangle(Amat)
+
+
+# The population ratio between the total number of case-triangles and the total number of triangles with at least one non-case node
+muFun(Amat,y)
+
+# Estimation of mu
+# Initial state X_0 selected with probabilities pi_i to avoid burn-in states
+# est.tri(amat,y,init=0,K=100,r=0.1,B=100)
+est.tri(amat=Amat,y,init=0,K=100,r=0.1,B=1000)
+
+
+# Estimation of mu
+# Initial state X_0 selected with probabilities pi_i to avoid burn-in states
+# est.tri(amat,y,init=0,K=100,r=0.1,B=100)
+est.tri(amat=Amat,y,init=0,K=500,r=0.1,B=1000)
+
+
+# Estimation of mu
+# Initial state X_0 selected with probabilities pi_i to avoid burn-in states
+# est.tri(amat,y,init=0,K=100,r=0.1,B=100)
+est.tri(amat=Amat,y,init=0,K=1000,r=0.1,B=1000)
+
+
+# Average degree in the population graph
+avedegree <- round(mean(colSums(Amat)),0)
+avedegree
+
+
+# Estimation of mu
+# Initial state X_0 selected with probabilities pi_i to avoid burn-in states
+# est.tri(amat,y,init=0,K=100,r=0.1,B=100)
+# Let's set r = average(degree) in the graph to make a random jump on average at least as probable as an adjacent move at each time step
+est.tri(amat=Amat,y,init=0,K=100,r=avedegree,B=1000)
+
+
+# Estimation of mu
+# Initial state X_0 selected with probabilities pi_i to avoid burn-in states
+# est.tri(amat,y,init=0,K=100,r=0.1,B=100)
+est.tri(amat=Amat,y,init=0,K=500,r=avedegree,B=1000)
+
+

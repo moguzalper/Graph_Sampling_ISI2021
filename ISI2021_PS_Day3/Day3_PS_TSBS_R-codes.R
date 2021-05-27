@@ -229,13 +229,72 @@ mainTSBS <- function(popgraph,n=2,Twave=1,orderM=2,motif=c('clique','cycle','sta
   
   
   expn <- trunc(expn)
+  cat('N, n =', N, n,'\n')
   cat('(Order,Motif) =', orderM,motif,'\n') 
   cat('Theta =', thetapop,'\t', '(Diameter, Obs.diam) =', diagmotif$diamkappa,diagmotif$obsdiamkappa,'\n') 
   if(gomaxgeo>0){cat('Expected n for t-wave SBS =',expn,'\n')}
   cat('estHT =', meanthetaHT,';','\t','MCvar =',varthetaHT,'\n') 
   cat('estmult =',meanthetamult,';','\t','MCvar =',varthetamult,'\n') 
-  if(goPIDA & includePIDA){cat('estPIDA =', meanthetaPIDA,';','\t','MCvar =',varthetaPIDA,'\n')}
+  if(goPIDA & includePIDA){cat('estPIDA =', meanthetaPIDA,';','\t','\t','MCvar =',varthetaPIDA,'\n')}
   cat('MCMSE(estHT) =', msethetaHT,'\n') 
   cat('MCMSE(estmult) =', msethetamult,'\n') 
   if(goPIDA & includePIDA){cat('MCMSE(estPIDA) =', msethetaPIDA,'\n')}
 }
+
+
+# skthG(sizeF=40,p=0.1,showplot=FALSE)
+popg <- skthG(p=0.1, showplot=TRUE)$G
+cat('Number of edges =',sum(degree(popg))/2,'\n')
+
+# Sketch of some well-known motifs up to order of 4
+skthMotifs()
+
+
+# makeMotif(orderM=2,motif=c('clique','cycle','star','path')[1])
+tmp.motif <- makeMotif(3)
+plot(tmp.motif)
+# diagMotif(orderM=2,motif=c('clique','cycle','star','path')[1])
+diagMotif(3)
+
+
+
+# makeMotif(orderM=2,motif=c('clique','cycle','star','path')[1])
+tmp.motif <- makeMotif(4,'path')
+plot(tmp.motif)
+# diagMotif(orderM=2,motif=c('clique','cycle','star','path')[1])
+diagMotif(4,'path')
+
+
+
+# countMotif(popgraph,orderM=2,motif=c('clique','cycle','star','path')[1])
+cat('The number of dyads in the population graph =',countMotif(popg,2),'\n')
+cat('The number of triangles in the population graph =',countMotif(popg,3),'\n')
+cat('The number of 2-stars in the population graph =',countMotif(popg,3,'star'),'\n')
+cat('The number of 4-cliques in the population graph =',countMotif(popg,4),'\n')
+cat('The number of 4-cycles in the population graph =',countMotif(popg,4,'cycle'),'\n')
+cat('The number of 3-stars in the population graph =',countMotif(popg,4,'star'),'\n')
+cat('The number of 3-paths in the population graph =',countMotif(popg,4,'path'),'\n')
+cat('The number of 5-cycles in the population graph =',countMotif(popg,5,'cycle'),'\n')
+
+
+# mainTSBS(popgraph,n=2,Twave=1,orderM=2,motif=c('clique','cycle','star','path')[1],B=50,includePIDA=FALSE)
+# Triangle
+mainTSBS(popg,orderM=3,Twave=2,includePIDA = TRUE)
+
+
+# Triangle
+mainTSBS(popg,orderM=3,Twave=3,includePIDA = TRUE)
+
+
+# Variance under SRS with induced OP
+varSRSinduced(popg,3,sizes0=10)
+
+
+# Triangle
+mainTSBS(popg,orderM=3,Twave=5,includePIDA = TRUE)
+
+
+# Variance under SRS with induced OP
+varSRSinduced(popg,3,sizes0=28)
+
+
